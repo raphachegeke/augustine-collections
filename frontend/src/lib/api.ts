@@ -1,4 +1,4 @@
-const BASE = "https://generalhardware.onrender.com/api";
+const BASE = "https://augustine-collections.onrender.com/api";
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${url}`, {
