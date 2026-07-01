@@ -29,7 +29,6 @@ const CheckoutPage = () => {
   const [searchParams] = useSearchParams();
   const retryOrderId = searchParams.get("retry");
 
-  // ✅ ALL hooks declared at the top, before any conditional logic
   const [phone, setPhone] = useState(user?.phone || "");
   const [address, setAddress] = useState(user?.address || "");
   const [loading, setLoading] = useState(false);
@@ -48,7 +47,6 @@ const CheckoutPage = () => {
   const waitStartTimeRef = useRef<number>(0);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ Handle redirects with useEffect (after all hooks)
   useEffect(() => {
     if (!token) {
       navigate("/login", { replace: true });
@@ -61,7 +59,6 @@ const CheckoutPage = () => {
     }
   }, [items.length, step, retryOrderId, token, navigate]);
 
-  // Handle retry from orders page
   useEffect(() => {
     if (retryOrderId && token) {
       setOrderId(retryOrderId);
@@ -80,7 +77,6 @@ const CheckoutPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryOrderId]);
 
-  // Cleanup intervals on unmount
   useEffect(() => {
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -99,66 +95,61 @@ const CheckoutPage = () => {
     }
   }, []);
 
-const startPolling = useCallback((oid: string) => {
-  waitStartTimeRef.current = Date.now();
-  setElapsedTime(0);
-  setCanRetry(false);
-  setStep("waiting");
-  let failCount = 0; // 👈 Track failures
+  const startPolling = useCallback((oid: string) => {
+    waitStartTimeRef.current = Date.now();
+    setElapsedTime(0);
+    setCanRetry(false);
+    setStep("waiting");
+    let failCount = 0;
 
-  // Update elapsed time every second
-  timerIntervalRef.current = setInterval(() => {
-    const elapsed = Date.now() - waitStartTimeRef.current;
-    setElapsedTime(Math.floor(elapsed / 1000));
+    timerIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - waitStartTimeRef.current;
+      setElapsedTime(Math.floor(elapsed / 1000));
 
-    if (elapsed >= RETRY_COOLDOWN) {
-      setCanRetry(true);
-    }
-
-    if (elapsed >= MAX_WAIT_TIME) {
-      stopPolling();
-      setStep("failed");
-      setFailureReason("Payment timed out. Please try again or confirm manually.");
-    }
-  }, 1000);
-
-  // Poll for payment status
-  pollIntervalRef.current = setInterval(async () => {
-    try {
-      const response = await mpesaApi.checkPaymentStatus(token!, oid);
-      failCount = 0; // Reset on success
-
-      const status = response.status;
-
-      if (status === "paid") {
-        stopPolling();
-        clearCart();
-        setStep("success");
-        setPaymentResult({
-          mpesaReceiptNumber: response.mpesaReceiptNumber,
-        });
-      } else if (status === "failed") {
-        stopPolling();
-        setStep("failed");
-        setFailureReason(response.message || "Payment failed");
+      if (elapsed >= RETRY_COOLDOWN) {
         setCanRetry(true);
       }
-    } catch (err: any) {
-      failCount++;
-      console.error("Poll error:", err);
-      
-      // Stop polling after 3 consecutive failures (e.g., 404s)
-      if (failCount >= 3) {
+
+      if (elapsed >= MAX_WAIT_TIME) {
         stopPolling();
         setStep("failed");
-        setFailureReason("Could not verify payment. If you paid, use manual confirmation.");
-        setCanRetry(true);
+        setFailureReason("Payment timed out. Please try again or confirm manually.");
       }
-    }
-  }, POLL_INTERVAL);
-}, [token, clearCart, stopPolling]);
+    }, 1000);
 
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await mpesaApi.checkPaymentStatus(token!, oid);
+        failCount = 0;
 
+        const status = response.status;
+
+        if (status === "paid") {
+          stopPolling();
+          clearCart();
+          setStep("success");
+          setPaymentResult({
+            mpesaReceiptNumber: response.mpesaReceiptNumber,
+          });
+        } else if (status === "failed") {
+          stopPolling();
+          setStep("failed");
+          setFailureReason(response.message || "Payment failed");
+          setCanRetry(true);
+        }
+      } catch (err: any) {
+        failCount++;
+        console.error("Poll error:", err);
+
+        if (failCount >= 3) {
+          stopPolling();
+          setStep("failed");
+          setFailureReason("Could not verify payment. If you paid, use manual confirmation.");
+          setCanRetry(true);
+        }
+      }
+    }, POLL_INTERVAL);
+  }, [token, clearCart, stopPolling]);
 
   const handleCheckout = async () => {
     setError("");
@@ -216,7 +207,7 @@ const startPolling = useCallback((oid: string) => {
   const handleRetryPayment = async (oid?: string) => {
     const targetOrderId = oid || orderId;
     if (!targetOrderId) return;
-    
+
     setError("");
     setFailureReason("");
     setLoading(true);
@@ -272,12 +263,11 @@ const startPolling = useCallback((oid: string) => {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // ✅ Guard clauses for rendering (not before hooks)
   if (!token || (items.length === 0 && step === "form" && !retryOrderId)) {
     return (
       <Layout>
         <div className="container max-w-lg py-16 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       </Layout>
     );
@@ -286,12 +276,13 @@ const startPolling = useCallback((oid: string) => {
   return (
     <Layout>
       <div className="container max-w-lg py-16 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-2 text-blue-600">Checkout</h1>
+        <p className="text-sm text-muted-foreground mb-8">Complete your order at Augustine's Collections</p>
 
         {step === "form" && (
           <div className="space-y-6">
-            <div className="bg-card border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold flex items-center gap-2">
+            <div className="bg-white border border-blue-100 rounded-lg p-6 space-y-4 shadow-sm">
+              <h2 className="font-display font-bold flex items-center gap-2 text-blue-600">
                 <Smartphone className="w-5 h-5" />
                 M-Pesa Payment
               </h2>
@@ -321,7 +312,7 @@ const startPolling = useCallback((oid: string) => {
               </div>
             </div>
 
-            <div className="bg-card border rounded-lg p-6 space-y-3">
+            <div className="bg-white border border-blue-100 rounded-lg p-6 space-y-3 shadow-sm">
               <h2 className="font-display font-bold">Order Summary</h2>
               {items.map((item) => (
                 <div
@@ -336,22 +327,22 @@ const startPolling = useCallback((oid: string) => {
                   </span>
                 </div>
               ))}
-              <div className="border-t pt-3 flex justify-between font-bold text-lg">
+              <div className="border-t border-blue-100 pt-3 flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span className="text-primary">
+                <span className="text-blue-600">
                   KSh {total.toLocaleString()}
                 </span>
               </div>
             </div>
 
             {error && (
-              <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+              <p className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
                 {error}
               </p>
             )}
 
             <Button
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               size="lg"
               disabled={loading || !phone || !address}
               onClick={handleCheckout}
@@ -364,7 +355,7 @@ const startPolling = useCallback((oid: string) => {
 
         {step === "paying" && (
           <div className="text-center space-y-4 py-12">
-            <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
+            <Loader2 className="w-16 h-16 animate-spin text-blue-600 mx-auto" />
             <h2 className="text-xl font-bold">Sending M-Pesa Prompt...</h2>
             <p className="text-muted-foreground">
               Please wait while we send the STK push to your phone.
@@ -375,8 +366,8 @@ const startPolling = useCallback((oid: string) => {
         {step === "waiting" && (
           <div className="text-center space-y-6 py-8">
             <div className="relative inline-block">
-              <Smartphone className="w-16 h-16 text-primary mx-auto animate-pulse" />
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+              <Smartphone className="w-16 h-16 text-blue-600 mx-auto animate-pulse" />
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
                 {formatTime(elapsedTime)}
               </div>
             </div>
@@ -390,7 +381,7 @@ const startPolling = useCallback((oid: string) => {
               </p>
             </div>
 
-            <div className="bg-card border rounded-lg p-4 text-left text-sm space-y-2">
+            <div className="bg-white border border-blue-100 rounded-lg p-4 text-left text-sm space-y-2 shadow-sm">
               <p className="font-medium">What to do:</p>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
                 <li>Open M-Pesa on your phone</li>
@@ -412,6 +403,7 @@ const startPolling = useCallback((oid: string) => {
                 </p>
                 <Button
                   variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
                   onClick={() => {
                     stopPolling();
                     handleRetryPayment();
@@ -428,7 +420,7 @@ const startPolling = useCallback((oid: string) => {
                 <p className="text-xs text-muted-foreground">
                   If you already paid and got an M-Pesa confirmation message,{" "}
                   <button
-                    className="text-primary underline hover:no-underline"
+                    className="text-blue-600 underline hover:no-underline font-medium"
                     onClick={() => setManualConfirmOpen(true)}
                   >
                     confirm payment manually
@@ -441,20 +433,19 @@ const startPolling = useCallback((oid: string) => {
 
         {step === "success" && (
           <div className="text-center space-y-4 py-8">
-            <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-12 h-12 text-success" />
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle className="w-12 h-12 text-green-600" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-success">
+              <h2 className="text-2xl font-bold text-green-600">
                 Payment Successful!
               </h2>
               <p className="text-muted-foreground">
-                Your payment has been confirmed and your order is being
-                processed.
+                Your payment has been confirmed and your order is being processed.
               </p>
             </div>
 
-            <div className="bg-card border rounded-lg p-5 text-left space-y-3">
+            <div className="bg-white border border-blue-100 rounded-lg p-5 text-left space-y-3 shadow-sm">
               <h3 className="font-bold">Payment Details</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -463,7 +454,7 @@ const startPolling = useCallback((oid: string) => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">M-Pesa Receipt</p>
-                  <p className="font-mono font-medium text-success">
+                  <p className="font-mono font-medium text-green-600">
                     {paymentResult?.mpesaReceiptNumber || "N/A"}
                   </p>
                 </div>
@@ -479,10 +470,10 @@ const startPolling = useCallback((oid: string) => {
             </div>
 
             <div className="flex gap-3 justify-center pt-2">
-              <Button onClick={() => navigate("/orders")}>
+              <Button onClick={() => navigate("/orders")} className="bg-blue-600 hover:bg-blue-700 text-white">
                 View My Orders
               </Button>
-              <Button variant="outline" onClick={() => navigate("/products")}>
+              <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50" onClick={() => navigate("/products")}>
                 Continue Shopping
               </Button>
             </div>
@@ -491,11 +482,11 @@ const startPolling = useCallback((oid: string) => {
 
         {step === "failed" && (
           <div className="text-center space-y-4 py-8">
-            <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
-              <XCircle className="w-12 h-12 text-destructive" />
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+              <XCircle className="w-12 h-12 text-red-500" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-destructive">
+              <h2 className="text-2xl font-bold text-red-500">
                 Payment Failed
               </h2>
               <p className="text-muted-foreground">
@@ -504,7 +495,7 @@ const startPolling = useCallback((oid: string) => {
             </div>
 
             {orderId && (
-              <div className="bg-card border rounded-lg p-4 text-left text-sm space-y-1">
+              <div className="bg-white border border-blue-100 rounded-lg p-4 text-left text-sm space-y-1 shadow-sm">
                 <p>
                   <span className="text-muted-foreground">Order ID: </span>
                   <span className="font-mono">{orderId}</span>
@@ -518,7 +509,7 @@ const startPolling = useCallback((oid: string) => {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               {orderId && (
-                <Button onClick={() => handleRetryPayment()} disabled={loading}>
+                <Button onClick={() => handleRetryPayment()} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
                   {loading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
@@ -529,6 +520,7 @@ const startPolling = useCallback((oid: string) => {
               )}
               <Button
                 variant="outline"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50"
                 onClick={() => {
                   stopPolling();
                   setStep("form");
@@ -548,13 +540,13 @@ const startPolling = useCallback((oid: string) => {
         {/* Manual Confirm Modal */}
         {manualConfirmOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-card border rounded-lg p-6 max-w-sm w-full space-y-4">
+            <div className="bg-white border border-blue-100 rounded-lg p-6 max-w-sm w-full space-y-4 shadow-lg">
               <h3 className="font-bold text-lg">Confirm Payment Manually</h3>
               <p className="text-sm text-muted-foreground">
                 Enter the M-Pesa confirmation code (e.g., SHK4X7Y9Z2) from your phone's M-Pesa message.
               </p>
               {error && (
-                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                <p className="text-sm text-red-500 bg-red-50 p-2 rounded">
                   {error}
                 </p>
               )}
@@ -568,7 +560,7 @@ const startPolling = useCallback((oid: string) => {
               />
               <div className="flex gap-2">
                 <Button
-                  className="flex-1"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={!receiptInput || confirming}
                   onClick={handleManualConfirm}
                 >
@@ -577,6 +569,7 @@ const startPolling = useCallback((oid: string) => {
                 </Button>
                 <Button
                   variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
                   onClick={() => {
                     setManualConfirmOpen(false);
                     setError("");

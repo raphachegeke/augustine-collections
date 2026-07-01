@@ -95,7 +95,7 @@ const AdminPage = () => {
         category: pForm.category,
         featured: pForm.featured,
       });
-      toast.success("Product created!");
+      toast.success("Clothing item created!");
       setPForm({ name: "", description: "", price: "", stock: "", images: "", category: "", featured: false });
       fetchAll();
     } catch (err: any) {
@@ -107,7 +107,7 @@ const AdminPage = () => {
   const handleDeleteProduct = async (id: string) => {
     try {
       await productsApi.delete(token!, id);
-      toast.success("Product deleted");
+      toast.success("Item deleted");
       fetchAll();
     } catch (err: any) {
       toast.error(err.message);
@@ -140,16 +140,17 @@ const AdminPage = () => {
       case "failed":
         return { label: "Failed", bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400", icon: <XCircle className="w-3 h-3" /> };
       default:
-        return { label: "Pending", bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400", icon: <Clock className="w-3 h-3" /> };
+        return { label: "Pending", bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400", icon: <Clock className="w-3 h-3" /> };
     }
   };
 
-  if (authLoading || loading) return <Layout><div className="container py-16"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div></Layout>;
+  if (authLoading || loading) return <Layout><div className="container py-16"><Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" /></div></Layout>;
 
   return (
     <Layout>
       <div className="container max-w-5xl py-12 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2 text-blue-600">Admin Dashboard</h1>
+        <p className="text-sm text-muted-foreground mb-8">Manage Augustine's Collections — products, categories & orders</p>
 
         <Tabs defaultValue="products">
           <TabsList className="mb-6">
@@ -160,12 +161,12 @@ const AdminPage = () => {
 
           {/* ==================== PRODUCTS ==================== */}
           <TabsContent value="products" className="space-y-8">
-            <form onSubmit={handleCreateProduct} className="bg-card border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold flex items-center gap-2"><Plus className="w-5 h-5" /> Add Product</h2>
+            <form onSubmit={handleCreateProduct} className="bg-white border border-blue-100 rounded-lg p-6 space-y-4 shadow-sm">
+              <h2 className="font-display font-bold flex items-center gap-2 text-blue-600"><Plus className="w-5 h-5" /> Add Clothing Item</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Name</Label><Input value={pForm.name} onChange={(e) => setPForm((p) => ({ ...p, name: e.target.value }))} required /></div>
                 <div className="space-y-2"><Label>Price (KSh)</Label><Input type="number" value={pForm.price} onChange={(e) => setPForm((p) => ({ ...p, price: e.target.value }))} required /></div>
-                <div className="space-y-2"><Label>Stock</Label><Input type="number" value={pForm.stock} onChange={(e) => setPForm((p) => ({ ...p, stock: e.target.value }))} required /></div>
+                <div className="space-y-2"><Label>Stock (Pieces)</Label><Input type="number" value={pForm.stock} onChange={(e) => setPForm((p) => ({ ...p, stock: e.target.value }))} required /></div>
                 <div className="space-y-2">
                   <Label>Category</Label>
                   <Select value={pForm.category} onValueChange={(v) => setPForm((p) => ({ ...p, category: v }))}>
@@ -184,21 +185,21 @@ const AdminPage = () => {
                   <Label htmlFor="featured">Featured</Label>
                 </div>
               </div>
-              <Button type="submit" disabled={pLoading}>{pLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create Product</Button>
+              <Button type="submit" disabled={pLoading} className="bg-blue-600 hover:bg-blue-700 text-white">{pLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create Item</Button>
             </form>
 
             <div className="space-y-3">
-              <h2 className="font-display font-bold">All Products ({products.length})</h2>
+              <h2 className="font-display font-bold">All Clothing Items ({products.length})</h2>
               {products.map((p) => (
-                <div key={p._id} className="flex items-center justify-between bg-card border rounded-lg p-4">
+                <div key={p._id} className="flex items-center justify-between bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <img src={p.images?.[0] || "/placeholder.svg"} alt={p.name} className="w-12 h-12 rounded-md object-cover bg-muted" />
+                    <img src={p.images?.[0] || "/placeholder.svg"} alt={p.name} className="w-12 h-12 rounded-md object-cover bg-blue-50" />
                     <div>
                       <p className="font-medium text-sm">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">KSh {p.price?.toLocaleString()} • Stock: {p.stock}</p>
+                      <p className="text-xs text-muted-foreground">KSh {p.price?.toLocaleString()} • Stock: {p.stock} pieces</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteProduct(p._id)}>
+                  <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteProduct(p._id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -208,21 +209,21 @@ const AdminPage = () => {
 
           {/* ==================== CATEGORIES ==================== */}
           <TabsContent value="categories" className="space-y-8">
-            <form onSubmit={handleCreateCategory} className="bg-card border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold flex items-center gap-2"><Plus className="w-5 h-5" /> Add Category</h2>
+            <form onSubmit={handleCreateCategory} className="bg-white border border-blue-100 rounded-lg p-6 space-y-4 shadow-sm">
+              <h2 className="font-display font-bold flex items-center gap-2 text-blue-600"><Plus className="w-5 h-5" /> Add Category</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Name</Label><Input value={cForm.name} onChange={(e) => setCForm((p) => ({ ...p, name: e.target.value }))} required /></div>
                 <div className="space-y-2"><Label>Image URL</Label><Input value={cForm.image} onChange={(e) => setCForm((p) => ({ ...p, image: e.target.value }))} /></div>
                 <div className="space-y-2 md:col-span-2"><Label>Description</Label><Input value={cForm.description} onChange={(e) => setCForm((p) => ({ ...p, description: e.target.value }))} /></div>
               </div>
-              <Button type="submit" disabled={cLoading}>{cLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create Category</Button>
+              <Button type="submit" disabled={cLoading} className="bg-blue-600 hover:bg-blue-700 text-white">{cLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create Category</Button>
             </form>
 
             <div className="space-y-3">
               <h2 className="font-display font-bold">All Categories ({categories.length})</h2>
               {categories.map((c) => (
-                <div key={c._id} className="flex items-center gap-3 bg-card border rounded-lg p-4">
-                  {c.image && <img src={c.image} alt={c.name} className="w-12 h-12 rounded-md object-cover bg-muted" />}
+                <div key={c._id} className="flex items-center gap-3 bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
+                  {c.image && <img src={c.image} alt={c.name} className="w-12 h-12 rounded-md object-cover bg-blue-50" />}
                   <div>
                     <p className="font-medium text-sm">{c.name}</p>
                     <p className="text-xs text-muted-foreground">{c.description}</p>
@@ -237,16 +238,16 @@ const AdminPage = () => {
             {/* Search & Filter Bar */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
                 <Input
                   placeholder="Search by order #, name, email, phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 border-blue-200 focus:border-blue-500"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-44">
+                <SelectTrigger className="w-full sm:w-44 border-blue-200">
                   <SelectValue placeholder="Filter status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,7 +268,7 @@ const AdminPage = () => {
               </p>
               {(searchQuery || statusFilter !== "all") && (
                 <button
-                  className="text-primary hover:underline text-xs"
+                  className="text-blue-600 hover:underline text-xs font-medium"
                   onClick={() => { setSearchQuery(""); setStatusFilter("all"); }}
                 >
                   Clear filters
@@ -277,8 +278,8 @@ const AdminPage = () => {
 
             {/* Orders List */}
             {filteredOrders.length === 0 ? (
-              <div className="text-center py-12 bg-card border rounded-lg">
-                <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+              <div className="text-center py-12 bg-white border border-blue-100 rounded-lg shadow-sm">
+                <ClipboardList className="w-10 h-10 mx-auto text-blue-400 mb-3" />
                 <p className="text-muted-foreground">
                   {searchQuery || statusFilter !== "all"
                     ? "No orders match your search."
@@ -294,10 +295,10 @@ const AdminPage = () => {
                   return (
                     <div
                       key={order._id}
-                      className="bg-card border rounded-lg overflow-hidden"
+                      className="bg-white border border-blue-100 rounded-lg overflow-hidden shadow-sm"
                     >
                       {/* Order Header */}
-                      <div className="flex items-center justify-between p-4 pb-3 border-b bg-muted/20">
+                      <div className="flex items-center justify-between p-4 pb-3 border-b border-blue-50 bg-blue-50/50">
                         <div className="space-y-0.5">
                           <p className="font-mono text-sm font-bold">
                             #{order._id?.slice(-8).toUpperCase()}
@@ -321,7 +322,7 @@ const AdminPage = () => {
                       </div>
 
                       {/* Customer Info */}
-                      <div className="px-4 py-3 border-b grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      <div className="px-4 py-3 border-b border-blue-50 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                         <div>
                           <p className="text-xs text-muted-foreground">Customer</p>
                           <p className="font-medium">{user.name || "Unknown"}</p>
@@ -337,11 +338,11 @@ const AdminPage = () => {
                       </div>
 
                       {/* Order Items */}
-                      <div className="px-4 py-3 border-b">
+                      <div className="px-4 py-3 border-b border-blue-50">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-xs text-muted-foreground border-b">
-                              <th className="text-left pb-2 font-medium">Product</th>
+                            <tr className="text-xs text-muted-foreground border-b border-blue-50">
+                              <th className="text-left pb-2 font-medium">Item</th>
                               <th className="text-center pb-2 font-medium w-16">Qty</th>
                               <th className="text-right pb-2 font-medium w-28">Price</th>
                               <th className="text-right pb-2 font-medium w-28">Subtotal</th>
@@ -349,20 +350,20 @@ const AdminPage = () => {
                           </thead>
                           <tbody>
                             {order.items?.map((item: any, idx: number) => {
-                              const name = item.product?.name || item.name || "Product";
+                              const name = item.product?.name || item.name || "Item";
                               const price = item.product?.price || item.price || 0;
                               const qty = item.quantity || 1;
                               const image = item.product?.image || item.image;
 
                               return (
-                                <tr key={idx} className="border-b last:border-0">
+                                <tr key={idx} className="border-b border-blue-50 last:border-0">
                                   <td className="py-2">
                                     <div className="flex items-center gap-2">
                                       {image && (
                                         <img
                                           src={image}
                                           alt={name}
-                                          className="w-8 h-8 rounded object-cover bg-muted"
+                                          className="w-8 h-8 rounded object-cover bg-blue-50"
                                         />
                                       )}
                                       <span className="truncate max-w-[200px]">{name}</span>
@@ -383,7 +384,7 @@ const AdminPage = () => {
                       </div>
 
                       {/* Order Footer */}
-                      <div className="px-4 py-3 bg-muted/30 space-y-2">
+                      <div className="px-4 py-3 bg-blue-50/30 space-y-2">
                         {/* Delivery address */}
                         {order.deliveryAddress && (
                           <p className="text-xs text-muted-foreground">
@@ -406,15 +407,15 @@ const AdminPage = () => {
 
                         {/* Error */}
                         {order.status === "failed" && order.lastPaymentError && (
-                          <p className="text-xs text-red-600 dark:text-red-400">
+                          <p className="text-xs text-red-500">
                             ⚠️ {order.lastPaymentError}
                           </p>
                         )}
 
                         {/* Total */}
-                        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <div className="flex items-center justify-between pt-2 border-t border-blue-100">
                           <span className="text-sm font-medium">Total</span>
-                          <span className="text-xl font-bold text-primary">
+                          <span className="text-xl font-bold text-blue-600">
                             KSh {order.totalAmount?.toLocaleString() || "—"}
                           </span>
                         </div>

@@ -85,16 +85,14 @@ const OrdersPage = () => {
         icon: <Ban className="w-3 h-3" />,
       };
     }
-    // Default = pending, undefined, null, or anything else
     return {
       label: "Pending",
-      bg: "bg-yellow-100 dark:bg-yellow-900/30",
-      text: "text-yellow-700 dark:text-yellow-400",
+      bg: "bg-blue-100 dark:bg-blue-900/30",
+      text: "text-blue-700 dark:text-blue-400",
       icon: <Clock className="w-3 h-3" />,
     };
   };
 
-  // Show retry for anything that's NOT paid/delivered/cancelled
   const canRetryPayment = (status: string) => {
     const s = status?.toLowerCase()?.trim();
     const finalStatuses = ["paid", "delivered", "cancelled"];
@@ -104,24 +102,24 @@ const OrdersPage = () => {
   return (
     <Layout>
       <div className="container max-w-2xl py-12 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2">My Orders</h1>
+        <h1 className="text-3xl font-bold mb-2 text-blue-600">My Orders</h1>
         <p className="text-muted-foreground mb-8">
-          Track your orders and retry failed payments.
+          Track your clothing orders and retry failed payments.
         </p>
 
         {loading ? (
           <LoadingSpinner />
         ) : orders.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="w-10 h-10 text-muted-foreground" />
+            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="w-10 h-10 text-blue-400" />
             </div>
             <h3 className="font-semibold text-lg mb-1">No orders yet</h3>
             <p className="text-muted-foreground mb-6">
               When you place an order, it will appear here.
             </p>
-            <Button onClick={() => navigate("/products")}>
-              Browse Products
+            <Button onClick={() => navigate("/products")} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Shop Clothing
             </Button>
           </div>
         ) : (
@@ -133,10 +131,10 @@ const OrdersPage = () => {
               return (
                 <div
                   key={order._id}
-                  className="bg-card border rounded-lg overflow-hidden"
+                  className="bg-white border border-blue-100 rounded-lg overflow-hidden shadow-sm"
                 >
                   {/* Header */}
-                  <div className="flex items-center justify-between p-4 pb-3 border-b">
+                  <div className="flex items-center justify-between p-4 pb-3 border-b border-blue-50">
                     <div>
                       <p className="font-mono text-sm font-medium">
                         #{order._id?.slice(-8).toUpperCase()}
@@ -163,7 +161,7 @@ const OrdersPage = () => {
                   {/* Items */}
                   <div className="p-4 pb-3 space-y-2">
                     {order.items?.map((item: any, idx: number) => {
-                      const name = item.product?.name || item.name || "Product";
+                      const name = item.product?.name || item.name || "Item";
                       const price = item.product?.price || item.price || 0;
                       const qty = item.quantity || 1;
                       const image = item.product?.image || item.image;
@@ -177,12 +175,12 @@ const OrdersPage = () => {
                             <img
                               src={image}
                               alt={name}
-                              className="w-10 h-10 rounded object-cover bg-muted"
+                              className="w-10 h-10 rounded object-cover bg-blue-50"
                             />
                           )}
                           {!image && (
-                            <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                              <Package className="w-4 h-4 text-muted-foreground" />
+                            <div className="w-10 h-10 rounded bg-blue-50 flex items-center justify-center">
+                              <Package className="w-4 h-4 text-blue-400" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -200,8 +198,7 @@ const OrdersPage = () => {
                   </div>
 
                   {/* Footer */}
-                  <div className="px-4 py-3 bg-muted/30 space-y-3">
-                    {/* Paid - show receipt */}
+                  <div className="px-4 py-3 bg-blue-50/50 space-y-3">
                     {order.status === "paid" && order.mpesaReceiptNumber && (
                       <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
                         <Smartphone className="w-3.5 h-3.5" />
@@ -214,7 +211,6 @@ const OrdersPage = () => {
                       </div>
                     )}
 
-                    {/* Failed - show error + retry button */}
                     {order.status === "failed" && (
                       <div className="flex items-start gap-2 text-xs text-red-600 dark:text-red-400">
                         <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
@@ -224,9 +220,8 @@ const OrdersPage = () => {
                       </div>
                     )}
 
-                    {/* Pending - show notice */}
                     {(!order.status || order.status === "pending") && (
-                      <div className="flex items-center gap-2 text-xs text-yellow-600 dark:text-yellow-400">
+                      <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
                         <Clock className="w-3.5 h-3.5" />
                         <span>
                           Payment not yet completed. Tap retry to pay.
@@ -234,32 +229,29 @@ const OrdersPage = () => {
                       </div>
                     )}
 
-                    {/* Delivery address */}
                     {order.deliveryAddress && (
                       <p className="text-xs text-muted-foreground">
                         📍 {order.deliveryAddress}
                       </p>
                     )}
 
-                    {/* Total + Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    <div className="flex items-center justify-between pt-2 border-t border-blue-100">
                       <div>
                         <span className="text-sm text-muted-foreground">
                           Total
                         </span>
-                        <p className="text-lg font-bold text-primary">
+                        <p className="text-lg font-bold text-blue-600">
                           KSh {order.totalAmount?.toLocaleString() || "—"}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* 👇 RETRY BUTTON - now shows for pending/failed/undefined */}
                         {showRetry && (
                           <Button
                             size="sm"
                             onClick={() => handleRetry(order._id)}
                             disabled={retryingId === order._id}
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                           >
                             {retryingId === order._id ? (
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -33,19 +33,22 @@ const RegisterPage = () => {
   return (
     <Layout>
       <div className="container max-w-md py-16 animate-fade-in">
-        <h1 className="text-3xl font-bold text-center mb-8">Create Account</h1>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg border">
-          {error && <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-blue-600">Join Augustine's Collections</h1>
+          <p className="text-sm text-muted-foreground mt-2">Create an account to shop the latest styles</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg border border-blue-100 shadow-sm">
+          {error && <p className="text-sm text-red-500 bg-red-50 p-3 rounded-md">{error}</p>}
           <div className="space-y-2"><Label>Full Name</Label><Input value={form.name} onChange={set("name")} required /></div>
           <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={set("email")} required /></div>
           <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={set("phone")} placeholder="07XXXXXXXX" required /></div>
-          <div className="space-y-2"><Label>Address</Label><Input value={form.address} onChange={set("address")} required /></div>
+          <div className="space-y-2"><Label>Delivery Address</Label><Input value={form.address} onChange={set("address")} required /></div>
           <div className="space-y-2"><Label>Password</Label><Input type="password" value={form.password} onChange={set("password")} required minLength={6} /></div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Register
+          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create My Account
           </Button>
           <p className="text-sm text-center text-muted-foreground">
-            Already have an account? <Link to="/login" className="text-primary hover:underline">Sign In</Link>
+            Already have an account? <Link to="/login" className="text-blue-600 hover:underline font-medium">Sign In</Link>
           </p>
         </form>
       </div>

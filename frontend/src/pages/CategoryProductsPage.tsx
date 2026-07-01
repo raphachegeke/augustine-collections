@@ -30,10 +30,13 @@ const CategoryProductsPage = () => {
   return (
     <Layout>
       <div className="container py-12">
-        <h1 className="text-3xl font-bold mb-2">{categoryName || "Category"}</h1>
-        <p className="text-muted-foreground mb-8">{products.length} product{products.length !== 1 ? "s" : ""} found</p>
+        <h1 className="text-3xl font-bold mb-2 text-blue-600">{categoryName || "Category"}</h1>
+        <p className="text-muted-foreground mb-8">{products.length} item{products.length !== 1 ? "s" : ""} from Augustine's Collections</p>
         {loading ? <LoadingSpinner /> : products.length === 0 ? (
-          <p className="text-muted-foreground py-12 text-center">No products in this category yet.</p>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No clothing items in this category yet.</p>
+            <p className="text-sm text-muted-foreground mt-1">Check back soon for new arrivals!</p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((p) => <ProductCard key={p._id} product={p} />)}
