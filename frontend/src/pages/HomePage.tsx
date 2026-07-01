@@ -26,9 +26,28 @@ const HomePage = () => {
       .then(([cats, prods]) => {
         setCategories(Array.isArray(cats) ? cats : []);
         const arr = Array.isArray(prods) ? prods : [];
-        setFeatured(arr.filter((p: any) => p.featured).slice(0, 8));
-        if (arr.filter((p: any) => p.featured).length === 0)
-          setFeatured(arr.slice(0, 8));
+
+        // 1. Create a function to shuffle the array randomly
+        const shuffleArray = (array: any[]) => {
+          const newArray = [...array];
+          for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+          }
+          return newArray;
+        };
+
+        // 2. Shuffle the products
+        const shuffledProducts = shuffleArray(arr);
+
+        // 3. Try to get random featured products first
+        const featuredItems = shuffledProducts.filter((p: any) => p.featured);
+
+        if (featuredItems.length > 0) {
+          setFeatured(featuredItems.slice(0, 8)); // Show 8 random featured items
+        } else {
+          setFeatured(shuffledProducts.slice(0, 8)); // Fallback: show 8 completely random items
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
